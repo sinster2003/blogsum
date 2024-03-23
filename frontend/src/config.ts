@@ -1,0 +1,1 @@
+export const BACKEND_URL="https://backend.sindhurvshabaraya2318.workers.dev";
