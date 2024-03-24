@@ -45,7 +45,7 @@ const Auth = ({ type }: { type: string }): JSX.Element => {
         <h1 className="text-3xl sm:text-4xl font-bold">
           {type === "signup" ? "Create an account" : "Welcome to blogsum"}
         </h1>
-        <p className="text-md sm:text-lg text-gray-500">
+        <p className="text-base sm:text-lg text-gray-500">
           {type === "signup"
             ? "Already have an account?"
             : "Do not have an account?"}{" "}

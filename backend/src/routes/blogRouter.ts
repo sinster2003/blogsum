@@ -117,7 +117,19 @@ blogRouter.get("/bulk", async (c) => {
   
     // zod
     try {
-      const blogs = await prisma.post.findMany({});
+      const blogs = await prisma.post.findMany({
+        select: {
+          id: true,
+          title: true,
+          content: true,
+          // join or populate similar to mongoose
+          author: {
+            select: {
+              name: true
+            }
+          }
+        }
+      });
   
       if (!blogs.length) {
         c.status(404);
@@ -134,7 +146,7 @@ blogRouter.get("/bulk", async (c) => {
         });
       }
   
-      const totalPages = blogs.length / Number(itemsPerPage);
+      const totalPages = Math.ceil(blogs.length / Number(itemsPerPage));
       const updatedBlogs = blogs.slice(
         (Number(currentPage) - 1) * Number(itemsPerPage),
         Number(itemsPerPage) * Number(currentPage)
@@ -164,6 +176,17 @@ blogRouter.get("/:id", async (c) => {
       where: {
         id,
       },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        // join or populate similar to mongoose
+        author: {
+          select: {
+            name: true
+          }
+        }
+      }
     });
 
     if (!blog) {
