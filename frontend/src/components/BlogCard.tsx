@@ -9,10 +9,10 @@ interface BlogCardProps {
 
 const BlogCard = ({ authorName, title, content, publishedDate }: BlogCardProps) => {
     return (
-    <div className="flex flex-col gap-2 w-full lg:w-1/2 pb-6 border-b-2 border-slate-100">
+    <div className="flex flex-col gap-2 p-4 lg:p-6 border-b-2 border-slate-100 shadow-lg">
         <div className="flex gap-2 items-center">
             <div className="flex gap-2.5 items-center">
-                <Avatar authorName={authorName}/>
+                <Avatar authorName={authorName} size={"small"}/>
                 <p className="text-base lg:text-lg">{authorName}</p>
             </div>
             <div className="flex gap-2 items-center">
