@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { sign } from "hono/jwt";
 import { encryptPassword } from "../utils/encryptPassword";
 import { signupObject, signinObject } from "@sinster2003/blogsum-zod-types";
+import authMiddleware from "../middlewares/auth";
 
 export const userRouter = new Hono<{
   Bindings: {
@@ -19,11 +20,11 @@ userRouter.post("/signin", async (c) => {
 
   try {
     const body = await c.req.json();
-    const { success } = signinObject.safeParse(body);
-    if(!success) {
+    const validation = signinObject.safeParse(body);
+    if(!validation?.success) {
       c.status(400);
       return c.json({
-        message: "Invalid inputs"
+        message: `${validation?.error?.issues[0].path[0]} Error: ${validation?.error?.issues[0]?.message}`
       })
     }
 
@@ -35,7 +36,7 @@ userRouter.post("/signin", async (c) => {
     });
 
     if (!user) {
-      c.status(403);
+      c.status(400);
       return c.json({
         message: "Invalid Credentials... Try Again",
       });
@@ -52,7 +53,9 @@ userRouter.post("/signin", async (c) => {
   } catch (error) {
     console.log(error);
     c.status(500);
-    return c.text("Something went wrong");
+    return c.json({
+      message: "Something went wrong"
+    });
   }
 });
 
@@ -64,11 +67,11 @@ userRouter.post("/signup", async (c) => {
   
   try {
     const body = await c.req.json(); // fetching body from frontend
-    const { success } = signupObject.safeParse(body);
-    if(!success) {
+    const validation = signupObject.safeParse(body);
+    if(!validation?.success) {
       c.status(400);
       return c.json({
-        message: "Invalid inputs"
+        message: `${validation?.error?.issues[0].path[0]} Error: ${validation?.error?.issues[0]?.message}`
       })
     }
 
@@ -81,7 +84,7 @@ userRouter.post("/signup", async (c) => {
     if (user) {
       return c.json(
         {
-          message: "Please Login",
+          message: "User already exists please login",
         },
         404
       );
@@ -113,6 +116,15 @@ userRouter.post("/signup", async (c) => {
   } catch (error) {
     console.log(error);
     c.status(500);
-    return c.text("Something went wrong");
+    return c.json({ 
+      message:"Something went wrong"
+    });
   }
+});
+
+userRouter.get("/validate", authMiddleware, (c) => {
+  c.status(200);
+  return c.json({
+    message: "Valid User"
+  });
 });

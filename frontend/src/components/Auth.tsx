@@ -4,6 +4,9 @@ import { useState } from "react";
 import axios from "axios";
 import { signinTypes, signupTypes } from "@sinster2003/blogsum-zod-types";
 import { BACKEND_URL } from "../config";
+import toast from "react-hot-toast";
+import { useSetRecoilState } from "recoil";
+import { userAtom } from "../atoms/validUserAtom";
 
 const Auth = ({ type }: { type: string }): JSX.Element => {
   const initialState: signupTypes | signinTypes = {
@@ -15,6 +18,7 @@ const Auth = ({ type }: { type: string }): JSX.Element => {
   const [postInputs, setPostInputs] = useState(initialState);
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
+  const setUser = useSetRecoilState(userAtom);
 
   const handleRequest = async () => {
     try {
@@ -33,9 +37,13 @@ const Auth = ({ type }: { type: string }): JSX.Element => {
       localStorage.setItem("token", `Bearer ${result.jwt}`);
       setLoading(false);
       setPostInputs(initialState);
+      toast.success("Welcome to blogsum");
+      setUser(true);
       navigate("/blogs");
     } catch (error) {
       console.log(error);
+      toast.error(`${error?.response?.data?.message}`);
+      setLoading(false);
     }
   };
 

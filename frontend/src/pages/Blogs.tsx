@@ -3,6 +3,7 @@ import { BlogCard } from "../components";
 import useBlogs from "../hooks/useBlogs";
 import { Link } from "react-router-dom";
 import Appbar from "../components/Appbar";
+import BlogsSkeleton from "../components/BlogsSkeleton";
 
 const Blogs = () => {
   // page inputs state
@@ -20,19 +21,20 @@ const Blogs = () => {
     return array;
   }, [totalPages]);
 
-  if (loading) {
-    return "Loading...";
-  }
-
   return (
     <div>
       <Appbar/>
-    <div className="flex flex-col items-center w-full gap-8 mt-10 px-4 lg:mt-20 lg:px-8">
-      {blogs?.map((blog) => {
+    {<div className="flex flex-col items-center w-full gap-8 mt-10 px-4 lg:mt-20 lg:px-8">
+      {loading && <>
+        <BlogsSkeleton/>
+        <BlogsSkeleton/>
+        <BlogsSkeleton/>
+      </>}
+      {!loading && !blogs.length && <p>No blogs yet... Publish your blog now</p>}
+      {!loading && blogs?.map((blog) => {
         return (
-          <Link to={`/blog/${blog?.id}`} className="w-full lg:w-1/2">
+          <Link key={blog?.id} to={`/blog/${blog?.id}`} className="w-full lg:w-1/2">
           <BlogCard
-            key={blog?.id}
             authorName={blog?.author?.name}
             title={blog?.title}
             content={blog?.content}
@@ -41,12 +43,12 @@ const Blogs = () => {
           </Link>
         );
       })}
-      <div className="flex gap-2 justify-center items-center">
-      {totalPagesArray.map((page) => (
+      {!loading && <div className="flex gap-2 justify-center items-center">
+      {totalPages && totalPagesArray?.map((page) => (
         <button key={page} onClick={() => setCurrentPage(page)} className="bg-slate-300 py-3 px-4 text-md rounded-md text-slate-700 hover:bg-slate-400 hover:text-white font-semibold">{page}</button>
       ))}
-      </div>
-    </div>
+      </div>}
+    </div>}
     </div>
   );
 };

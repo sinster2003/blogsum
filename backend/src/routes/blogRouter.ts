@@ -1,9 +1,8 @@
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
-import { Hono, Next } from "hono";
-import { Context } from "hono";
-import { verify } from "hono/jwt";
+import { Hono } from "hono";
 import { blogObject, updateBlogObject } from "@sinster2003/blogsum-zod-types";
+import authMiddleware from "../middlewares/auth";
 
 export const blogRouter = new Hono<{
   Bindings: {
@@ -16,24 +15,7 @@ export const blogRouter = new Hono<{
 }>();
 
 // middlewares ---> route protection
-blogRouter.use(async (c: Context, next: Next) => {
-  const BearerToken = c.req.header("Authorization");
-  const token = BearerToken?.split(" ")[1] || "";
-  try {
-    const { userId } = await verify(token, c.env.JWT_SECRET);
-    console.log(userId);
-    c.set("userId", userId);
-    await next();
-  } catch (error) {
-    console.log(error);
-    return c.json(
-      {
-        message: "Please Sign up",
-      },
-      400
-    );
-  }
-});
+blogRouter.use(authMiddleware);
 
 blogRouter.post("/", async (c) => {
   const authorId = c.get("userId"); 
@@ -44,12 +26,13 @@ blogRouter.post("/", async (c) => {
   // zod
   try {
     const body = await c.req.json();
-    const { success } = blogObject.safeParse(body);
-    if(!success) {
+    const validation = blogObject.safeParse(body);
+
+    if(!validation?.success) {
      c.status(400);
      return c.json({
-      message: "Invalid inputs"
-     }) 
+      message: `${validation?.error?.issues[0].path[0]} Error: ${validation?.error?.issues[0]?.message}`
+     })
     }
 
     const blog = await prisma.post.create({
@@ -80,11 +63,11 @@ blogRouter.put("/", async (c) => {
   // zod
   try {
     const body = await c.req.json();
-    const { success } = updateBlogObject.safeParse(body);
-    if(!success) {
+    const validation = updateBlogObject.safeParse(body);
+    if(!validation?.success) {
      c.status(400);
      return c.json({
-      message: "Invalid inputs"
+      message: `${validation?.error?.issues[0].path[0]} Error: ${validation?.error?.issues[0]?.message}`
      }) 
     }
 
@@ -132,8 +115,10 @@ blogRouter.get("/bulk", async (c) => {
       });
   
       if (!blogs.length) {
-        c.status(404);
+        c.status(200);
         return c.json({
+          blogs: [],
+          totalPages: null,
           message: "Blogs not found",
         });
       }
