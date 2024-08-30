@@ -48,7 +48,7 @@ const TextEditor = () => {
             );
             toast.success("Blog posted successfully");
             navigate("/blogs");
-          } catch (error) {
+          } catch (error: any) {
             console.log(error);
             toast.error(`${error?.response?.data?.message}`);
           }

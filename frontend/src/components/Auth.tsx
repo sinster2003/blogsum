@@ -40,7 +40,7 @@ const Auth = ({ type }: { type: string }): JSX.Element => {
       toast.success("Welcome to blogsum");
       setUser(true);
       navigate("/blogs");
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       toast.error(`${error?.response?.data?.message}`);
       setLoading(false);
